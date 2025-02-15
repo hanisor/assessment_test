@@ -2,35 +2,36 @@ import 'package:flutter/material.dart';
 
 class HistoryScreen extends StatelessWidget {
   final List<Map<String, dynamic>> activityHistory;
+  final String? preferredType;
 
-  HistoryScreen({required this.activityHistory});
+  const HistoryScreen({
+    required this.activityHistory,
+    this.preferredType,
+    Key? key,
+  }) : super(key: key);
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Activity History'),
+        title: const Text('Activity History'),
+        backgroundColor: Colors.blueAccent,
       ),
-      body: activityHistory.isEmpty
-          ? Center(
-              child: Text(
-                'No history yet!',
-                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-              ),
-            )
-          : ListView.builder(
-              itemCount: activityHistory.length,
-              itemBuilder: (context, index) {
-                final activity = activityHistory[index];
-                return ListTile(
-                  title: Text(activity['name']!),
-                  subtitle: Text('Price: ${activity['price']}'),
-                );
-              },
-            ),
+      body: ListView.builder(
+        itemCount: activityHistory.length,
+        itemBuilder: (context, index) {
+          final activity = activityHistory[index];
+          final isHighlighted =
+              preferredType != null && activity['type'] == preferredType;
+
+          return ListTile(
+            title: Text(activity['name']),
+            subtitle: Text("Price: ${activity['price']}"),
+            trailing: Text(activity['type']),
+            tileColor: isHighlighted ? Colors.yellow[100] : null, // Highlight activities
+          );
+        },
+      ),
     );
   }
 }
-
-
-
