@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:assessment_test/history_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -12,6 +13,8 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   String activityName = "Press 'Next' to get an activity!";
   String activityPrice = "";
+  List<Map<String, dynamic>> activityHistory = []; // To store activity history
+
 
   // Fetch a random activity from the API
   Future<void> fetchActivity() async {
@@ -21,10 +24,22 @@ class _MainScreenState extends State<MainScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        final newActivity = {
+          'name': data['activity'] ?? "Unknown activity",
+          'price': (data['price'] as double).toStringAsFixed(2),
+        };
+
         setState(() {
-          activityName = data['activity'] ?? "Unknown activity";
-          activityPrice =
-              "Price: ${(data['price'] as double).toStringAsFixed(2)}";
+          activityName = newActivity['name']!;
+          activityPrice = "Price: ${newActivity['price']}";
+
+          // Add the new activity to the history list
+          activityHistory.insert(0, newActivity);
+
+          // Keep the history to the most recent 50 activities
+          if (activityHistory.length > 50) {
+            activityHistory = activityHistory.sublist(0, 50);
+          }
         });
       } else {
         setState(() {
@@ -34,12 +49,12 @@ class _MainScreenState extends State<MainScreen> {
       }
     } catch (e) {
       setState(() {
-        activityName = "Unable to fetch activity. Please try again";
+        activityName = "Error: Unable to fetch activity.";
         activityPrice = "";
       });
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,6 +123,31 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 child: const Text(
                   'Next',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
+
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HistoryScreen(activityHistory: activityHistory),
+                        ),
+                      );
+                    },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'History',
                   style: TextStyle(fontSize: 16, color: Colors.white),
                 ),
               ),
